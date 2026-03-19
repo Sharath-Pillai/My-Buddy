@@ -29,4 +29,3 @@ This mini-project provides an elegant chat popup interface allowing users to con
 4. Open the `script.js` file and replace the `API_KEY` with your actual Gemini API key.
 5. Open `index.html` in your favorite web browser to start chatting!
 
-*(Note: The `API_KEY` included in the source code is for demonstration and should be replaced with your own secure key if deploying this publicly).*
