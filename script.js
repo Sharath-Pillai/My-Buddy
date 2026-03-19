@@ -13,8 +13,8 @@ const chatbotTogglerBtn = document.querySelector("#chatbot-toggler");
 const downArrowBtn = document.querySelector(".down-arrow");
 const chatForm = document.querySelector(".chat-form");
 
-const API_KEY = "AIzaSyAF3I6SvpugB83GyblPlglPN2OigZeqZJM";
-const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`;
+// Now, the frontend talks securely to our own backend server instead of directly to Google!
+const API_URL = "http://localhost:3000/api/chat";
 
 const userData = {
   message: null,
