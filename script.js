@@ -15,13 +15,13 @@ const downArrowBtn = document.querySelector('.down-arrow')
 const chatForm = document.querySelector('.chat-form')
 
 const API_KEY = "AIzaSyAF3I6SvpugB83GyblPlglPN2OigZeqZJM"
-const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`
+const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`
 
 const userData = {
     message: null,
     file: {
         data: null,
-        mime_type: null
+        mimeType: null
     }
 }
 const chatHistory = []
@@ -35,29 +35,41 @@ const appendFunction = (content, ...classes) => {
 
 const generateBotResponse = async (incominguserOutput) => {
     const messageElement = incominguserOutput.querySelector('.message-text')
+    
+    // Set up parts for the user message
+    const messageParts = [];
+    if (userData.message) {
+        messageParts.push({ text: userData.message });
+    }
+    if (userData.file.data) {
+        messageParts.push({ inlineData: userData.file });
+    }
+
     chatHistory.push({
         role: 'user',
-        parts: [{ text: userData.message }, ...(userData.file.data ? [{ inline_data: userData.file }] : [])]
-    })
+        parts: messageParts
+    });
+
     const requestOptions = {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
             contents: chatHistory
         })
-    }
+    };
+
     try {
         const response = await fetch(API_URL, requestOptions);
-        const data = await response.json()
-        if (!response.ok) throw new Error(data.error.message)
-        console.log(data)
-        const apiResponseText = data.candidates[0].content.parts[0].text.replace(/\*\*(.*?)\*\*/g, "$1").trim()
-        messageElement.innerText = apiResponseText
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error.message || "Something went wrong!");
+        console.log(data);
+        const apiResponseText = data.candidates[0].content.parts[0].text.replace(/\*\*(.*?)\*\*/g, "$1").trim();
+        messageElement.innerText = apiResponseText;
 
         chatHistory.push({
             role: 'model',
-            parts: [{ text: userData.message }]
-        })
+            parts: [{ text: apiResponseText }]
+        });
     } catch (error) {
         console.log(error)
         messageElement.innerText = error.message
@@ -78,7 +90,7 @@ const createMeassage = (e) => {
     fileUploadWrapper.classList.remove('file-uploaded')
     messageInput.dispatchEvent(new Event('input'))
 
-    const userMessgediv = `<div class="message-text"></div> ${userData.file.data ? `<img src="data:${userData.file.mime_type};base64,${userData.file.data}" class="attachment"/>` : ""}`
+    const userMessgediv = `<div class="message-text"></div> ${userData.file.data ? `<img src="data:${userData.file.mimeType};base64,${userData.file.data}" class="attachment"/>` : ""}`
 
     const userOutput = appendFunction(userMessgediv, "user-message")
     userOutput.querySelector('.message-text').textContent = userData.message
@@ -111,7 +123,7 @@ const createMeassage = (e) => {
 
 messageInput.addEventListener('keydown', (e) => {
     let userInput = e.target.value.trim()
-    if (e.key === 'Enter' && userInput && !e.shiftKey && window.innerWidth > 768) {
+    if (e.key === 'Enter' && (userInput || userData.file.data) && !e.shiftKey && window.innerWidth > 768) {
         createMeassage(e)
     }
 })
@@ -135,7 +147,7 @@ fileInput.addEventListener('change', () => {
         // console.log(e.target.result)
         userData.file = {
             data: base64String,
-            mime_type: file.type
+            mimeType: file.type
         }
         fileInput.value = ''
     }
@@ -165,7 +177,14 @@ emojiBtn.addEventListener('click', (e) => {
 
 
 document.querySelector('.chat-form').append(picker)
-sendBtn.addEventListener('click', (e) => createMeassage(e))
+sendBtn.addEventListener('click', (e) => {
+    let userInput = messageInput.value.trim();
+    if (userInput || userData.file.data) {
+        createMeassage(e);
+    } else {
+        e.preventDefault();
+    }
+});
 
 attachFile.addEventListener('click', () => {
     fileInput.click()
