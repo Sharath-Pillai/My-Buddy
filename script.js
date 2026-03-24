@@ -14,7 +14,7 @@ const downArrowBtn = document.querySelector(".down-arrow");
 const chatForm = document.querySelector(".chat-form");
 
 // Now, the frontend talks securely to our own backend server instead of directly to Google!
-const API_URL = "https://mybuddybot-backend.onrender.com/api/chat";
+const API_URL = `${process.env.Backend_URL}/api/chat`;
 
 const userData = {
   message: null,
